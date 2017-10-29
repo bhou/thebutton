@@ -23,7 +23,7 @@ void handlePushButton() {
 
   now = millis();
 
-  if (now - lastChangeTime > 500) {
+  if (now - lastChangeTime > getTriggerDelay()) {
     if (switchState == HIGH && !isTriggered) {
       isTriggered = true;
       sendHTTPS(getMethod(), getHost(), getPort(), getURL(), getRequestBody(), isJSONBody());

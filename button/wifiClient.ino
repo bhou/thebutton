@@ -11,7 +11,7 @@ void setupWiFiConnection() {
   bool connected = true;
   while (WiFi.status() != WL_CONNECTED) {
     now = millis();
-    if (now - start > 10000) {
+    if (now - start > 5000) {
       connected = false;
       break;
     }
@@ -32,19 +32,23 @@ void setupWiFiConnection() {
 }
 
 void handleWiFiReconnect() {
-	if (WiFi.status() != WL_CONNECTED) {
+	if (WiFi.status() != WL_CONNECTED) {    
     Serial.println("wifi reconnecting");
 		setupWiFiConnection();
 	}
 }
 
 void sendHTTPS(String reqMethod, String host, int httpsPort, String url, String body, bool isJson) {
+  digitalWrite(YELLOW, HIGH);
+  digitalWrite(GREEN, LOW);
+  
 	// Use WiFiClientSecure class to create TLS connection
   WiFiClientSecure client;
   Serial.print("connecting to ");
   Serial.println(host);
   if (!client.connect(host.c_str(), httpsPort)) {
     Serial.println("connection failed");
+    digitalWrite(YELLOW, LOW);
     digitalWrite(GREEN, LOW);
 		for (int i = 0; i < 10; i++) {
 			digitalWrite(RED, HIGH);
@@ -56,17 +60,17 @@ void sendHTTPS(String reqMethod, String host, int httpsPort, String url, String 
     return;
   }
 
-  if (client.verify(fingerprint, host.c_str())) {
+  /*
+	if (client.verify(fingerprint, host.c_str())) {
     Serial.println("certificate matches");
   } else {
     Serial.println("certificate doesn't match");
   }
+	*/
 
-  Serial.print("requesting URL: ");
-  Serial.println(url);
-
-  digitalWrite(YELLOW, HIGH);
-  digitalWrite(GREEN, LOW);
+  // Serial.print("requesting URL: ");
+  // Serial.println(url);
+  
   String request = reqMethod + " " + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
                "Content-Length: " + body.length() + "\r\n" +
@@ -75,13 +79,10 @@ void sendHTTPS(String reqMethod, String host, int httpsPort, String url, String 
   if (isJson) {
     request += "Content-Type: application/json\r\n";
   }
-
   request += "\r\n" + body;
-     
+
   client.print(request);
 
-  Serial.println("request sent");
-  Serial.println(request);
   while (client.connected()) {
     String line = client.readStringUntil('\n');
     if (line == "\r") {
@@ -93,9 +94,7 @@ void sendHTTPS(String reqMethod, String host, int httpsPort, String url, String 
   String respBody = client.readString();
   
   Serial.println("reply was:");
-  Serial.println("==========");
   Serial.println(respBody);
-  Serial.println("==========");
   Serial.println("closing connection");
   digitalWrite(YELLOW, LOW);
   digitalWrite(GREEN, HIGH);
