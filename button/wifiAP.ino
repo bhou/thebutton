@@ -131,7 +131,8 @@ void handleSettingRequest() {
 	returnOK();
 
 	if (needToReconnect) {
-		setupWiFiConnection();
+		// setupWiFiConnection();
+    reconnectWiFi();
 	}
 }
 

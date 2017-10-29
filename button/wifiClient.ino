@@ -1,6 +1,42 @@
 // Don't use the fingerprint to verify https response
 const char* fingerprint = "CF 05 98 89 CA FF 8E D8 5E 5C E0 C2 E4 F7 E6 C3 C7 50 DD 5C";
 
+
+bool reconnStarted = false;
+unsigned long reconnTime = 0;
+
+void reconnectWiFi() {
+  Serial.println("reconnect wifi");
+  digitalWrite(RED, LOW);
+  digitalWrite(YELLOW, LOW);
+  digitalWrite(GREEN, LOW);
+  WiFi.disconnect();
+  WiFi.begin(getSSID().c_str(), getPassword().c_str());
+  reconnStarted = true;
+  reconnTime = millis();
+}
+
+void checkWiFiStatus() {
+  if (!reconnStarted) {
+    return;
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+    unsigned long part = (millis() - reconnTime) / 250;
+    if (part >= 40 || part < 0) { // 10 s
+      reconnectWiFi();
+    }
+    if (part % 2 == 0) {
+      digitalWrite(YELLOW, LOW);
+    } else {
+      digitalWrite(YELLOW, HIGH);
+    }
+  } else {
+    reconnStarted = false;
+    digitalWrite(YELLOW, LOW);
+    digitalWrite(GREEN, HIGH);
+  }
+}
+
 void setupWiFiConnection() {
   digitalWrite(RED, LOW);
   digitalWrite(GREEN, LOW);

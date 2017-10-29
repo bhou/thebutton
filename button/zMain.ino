@@ -9,12 +9,14 @@ void setup() {
   welcome();
 
   setupWiFiAccessPoint();
-  setupWiFiConnection();
+  //setupWiFiConnection();
+  reconnectWiFi();
 }
 
 void loop() {
   handleWiFiAP();
-	handleWiFiReconnect();
+	//handleWiFiReconnect();
+  checkWiFiStatus();
 	handlePushButton();
 }
 
